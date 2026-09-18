@@ -86,13 +86,9 @@ message QQMessage {
     }
 
     message C2CStatusOperationInfo {
-      Info info = 1;
-
-      message Info {
-        string operator_uid = 1;
-        string receiver_uid = 2;
-        bytes info = 3;
-      }
+      string operator_uid = 1;
+      string receiver_uid = 2;
+      bytes info = 3;
     }
   }
 }
