@@ -123,5 +123,15 @@ data class QQMessage(
                 @ProtoNumber(20) val msgSeq: Int = 0
             )
         }
+
+        @Serializable
+        data class C2CStatusOperationInfo(
+            @ProtoNumber(1) val info: Info
+        ) {
+            @Serializable
+            data class Info(
+                @ProtoNumber(1) val operatorUid: String = "",
+            )
+        }
     }
 }

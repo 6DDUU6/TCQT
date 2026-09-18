@@ -139,6 +139,7 @@ object NewPreventRetractingMessageCore : MessageHandler {
         when (msgType) {
             528 -> if (subType == 138) onC2CRecallByMsgPush(operationInfoByteArray, msgPush, param)
             732 -> if (subType == 17) onGroupRecallByMsgPush(operationInfoByteArray, msgPush, param)
+            528 -> if (subType == 277) onC2CStatusByMsgPush(operationInfoByteArray, msgPush, param)
         }
     }
 
@@ -220,6 +221,24 @@ object NewPreventRetractingMessageCore : MessageHandler {
         showGroupRecallTip(operationInfo)
     }
 
+    private fun onC2CStatusByMsgPush(
+        operationInfoByteArray: ByteArray,
+        msgPush: MsgPush,
+        param: MethodHookParam,
+    ) {
+        //断言 messageBody不为空
+        check(msgPush.qqMessage.messageBody != null)
+        val operationInfo =
+            ProtoBuf.decodeFromByteArray<QQMessage.MessageBody.C2CStatusOperationInfo>(
+                operationInfoByteArray
+            )
+
+        //peerUid
+        val operatorUid = operationInfo.info.operatorUid
+
+        showC2CStatusTip(operatorUid)
+    }
+
     // ═══════════════════════════════════════════════════════════
     // C2C 撤回提示
     // ═══════════════════════════════════════════════════════════
@@ -249,6 +268,25 @@ object NewPreventRetractingMessageCore : MessageHandler {
             text("对方想撤回一条")
             msgRef("消息", msgSeq.toLong())
             text("(seq=$msgSeq)")
+        }
+    }
+
+    private fun showC2CStatusTip(operatorUid: String) {
+        if (!AntiRecallConfig.isGrayTipEnabled()) return
+
+        GlobalScope.launchWithCatch {
+            showC2CStatusTipInternal(operatorUid)
+        }
+    }
+
+    private suspend fun showC2CStatusTipInternal(peerUid: String) {
+        val contact = ContactHelper.generateContact(MsgConstant.KCHATTYPEC2C, peerUid)
+        LocalGrayTips.addLocalGrayTip(
+            contact,
+            JsonGrayBusiId.AIO_AV_C2C_NOTICE,
+            LocalGrayTips.Align.CENTER
+        ) {
+            text("对方聊天状态改变")
         }
     }
 

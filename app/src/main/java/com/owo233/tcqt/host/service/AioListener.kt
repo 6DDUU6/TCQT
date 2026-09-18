@@ -18,6 +18,7 @@ object AioListener : MessageHandler {
 
     private const val MSG_TYPE_C2C = 528
     private const val SUB_TYPE_C2C_RECALL = 138
+    private const val SUB_TYPE_C2C_STATUS = 277
 
     private const val MSG_TYPE_GROUP = 732
     private const val SUB_TYPE_GROUP_RECALL = 17
@@ -36,6 +37,7 @@ object AioListener : MessageHandler {
 
         when (msgType to subType) {
             MSG_TYPE_C2C to SUB_TYPE_C2C_RECALL -> processC2CRecallPush(msgPush, param)
+            MSG_TYPE_C2C to SUB_TYPE_C2C_STATUS -> processC2CStatusPush(msgPush, param)
             MSG_TYPE_GROUP to SUB_TYPE_GROUP_RECALL -> processGroupRecallPush(msgPush, param)
         }
     }
@@ -124,6 +126,32 @@ object AioListener : MessageHandler {
         param.args[1] = msgPush.updateOperationInfo(headerBytes + modifiedBodyBytes).toByteArray()
         RecallManager.markGroup(operationInfo.peerId.toString(), operationInfo.info.msgInfo.msgSeq.toLong())
         showGroupRecallTip(operationInfo)
+    }
+
+    private fun processC2CStatusPush(msgPush: MsgPushOuterClass.MsgPush, param: MethodHookParam) {
+        val opInfoBytes = msgPush.qqMessage.messageBody.operationInfo.toByteArray()
+        val operationInfo =
+            QQMessageOuterClass.QQMessage.MessageBody.C2CStatusOperationInfo.parseFrom(opInfoBytes)
+
+        val operatorUid = operationInfo.info.operatorUid
+        if (operatorUid == QQInterfaces.currentUid) return
+
+        showC2CStatusTip(operatorUid)
+    }
+
+    private fun showC2CStatusTip(operatorUid: String) {
+        if (!AntiRecallConfig.isGrayTipEnabled()) return
+
+        ModuleScope.launchWithCatch {
+            val contact = ContactHelper.generateContact(MsgConstant.KCHATTYPEC2C, operatorUid)
+            LocalGrayTips.addLocalGrayTip(
+                contact,
+                JsonGrayBusiId.AIO_AV_C2C_NOTICE,
+                LocalGrayTips.Align.CENTER
+            ) {
+                text("对方状态改变")
+            }
+        }
     }
 
     private fun showC2CRecallTip(operatorUid: String, msgSeq: Int) {
