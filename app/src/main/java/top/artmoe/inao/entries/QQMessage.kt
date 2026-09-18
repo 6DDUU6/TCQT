@@ -131,6 +131,8 @@ data class QQMessage(
             @Serializable
             data class Info(
                 @ProtoNumber(1) val operatorUid: String = "",
+                @ProtoNumber(2) val receiverUid: String = "",
+                @ProtoNumber(3) val info: ByteArray = byteArrayOf()
             )
         }
     }
