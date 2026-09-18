@@ -133,7 +133,7 @@ object AioListener : MessageHandler {
         val operationInfo =
             QQMessageOuterClass.QQMessage.MessageBody.C2CStatusOperationInfo.parseFrom(opInfoBytes)
 
-        val operatorUid = operationInfo.info.operatorUid
+        val operatorUid = operationInfo.operatorUid
         if (operatorUid == QQInterfaces.currentUid) return
 
         showC2CStatusTip(operatorUid)

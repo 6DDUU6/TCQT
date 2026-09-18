@@ -234,7 +234,7 @@ object NewPreventRetractingMessageCore : MessageHandler {
             )
 
         //peerUid
-        val operatorUid = operationInfo.info.operatorUid
+        val operatorUid = operationInfo.operatorUid
 
         showC2CStatusTip(operatorUid)
     }
